@@ -38,8 +38,12 @@ export default function InterviewDetailPage() {
       return;
     }
 
-    if (status === "authenticated" && id) {
-      fetch(`http://127.0.0.1:8000/api/history/${id}`)
+    if (status === "authenticated" && session?.accessToken && id) {
+      fetch(`http://127.0.0.1:8000/api/history/${id}`, {
+        headers: {
+          "Authorization": `Bearer ${session.accessToken}`
+        }
+      })
         .then((res) => {
           if (!res.ok) throw new Error("Failed to load interview");
           return res.json();

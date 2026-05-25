@@ -45,11 +45,11 @@ export function Navbar() {
             </div>
           ) : (
             <button
-              onClick={() => signIn("google")}
+              onClick={() => signIn()}
               className="flex items-center gap-2 text-sm font-medium px-4 py-2 rounded-lg bg-indigo-600 hover:bg-indigo-500 text-white transition-colors shadow-lg shadow-indigo-500/20"
             >
               <LogIn className="w-4 h-4" />
-              Sign in with Google
+              Sign in
             </button>
           )}
         </div>

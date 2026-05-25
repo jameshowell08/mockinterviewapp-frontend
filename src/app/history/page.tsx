@@ -20,8 +20,12 @@ export default function HistoryPage() {
   const [loading, setLoading] = useState(true);
 
   useEffect(() => {
-    if (status === "authenticated" && session?.user?.email) {
-      fetch(`http://127.0.0.1:8000/api/history?email=${encodeURIComponent(session.user.email)}`)
+    if (status === "authenticated" && session?.accessToken) {
+      fetch(`http://127.0.0.1:8000/api/history`, {
+        headers: {
+          "Authorization": `Bearer ${session.accessToken}`
+        }
+      })
         .then((res) => res.json())
         .then((data) => {
           setHistory(data);

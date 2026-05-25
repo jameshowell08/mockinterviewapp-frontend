@@ -217,7 +217,7 @@ export default function MockInterviewApp() {
 
     ws.onopen = () => {
       console.log("[WS] Connected, sending config...");
-      ws.send(JSON.stringify({ jobRole, difficulty, language }));
+      ws.send(JSON.stringify({ jobRole, difficulty, language, token: session?.accessToken }));
     };
 
     ws.onmessage = (event) => {
@@ -317,7 +317,10 @@ export default function MockInterviewApp() {
     try {
       const resp = await fetch("http://localhost:8000/api/summary", {
         method: "POST",
-        headers: { "Content-Type": "application/json" },
+        headers: { 
+          "Content-Type": "application/json",
+          "Authorization": `Bearer ${session?.accessToken}`
+        },
         body: JSON.stringify({ userEmail: session?.user?.email || "anonymous", jobRole, difficulty, transcript: entries }),
       });
       const result = await resp.json();
