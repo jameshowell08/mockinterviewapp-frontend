@@ -21,23 +21,21 @@ export const authOptions: NextAuthOptions = {
         try {
           const backendUrl = process.env.NEXT_PUBLIC_BACKEND_URL || "http://127.0.0.1:8000";
 
-          // 1. Ubah format menjadi URL Encoded (Form Data) & Paksa email jadi huruf kecil
-          const formData = new URLSearchParams();
-          formData.append('username', credentials.email.toLowerCase());
-          formData.append('password', credentials.password);
-
-          // 2. Tembak ke endpoint login backend (Pastikan endpoint-nya /api/auth/login atau sesuaikan dengan backendmu)
+          // Tembak kembali menggunakan format JSON sesuai permintaan Pydantic di FastAPI
           const res = await fetch(`${backendUrl}/api/auth/login`, {
             method: 'POST',
             headers: {
-              'Content-Type': 'application/x-www-form-urlencoded' // Wajib untuk FastAPI OAuth2
+              'Content-Type': 'application/json'
             },
-            body: formData.toString()
+            body: JSON.stringify({
+              // Gunakan toLowerCase() agar penulisan email Ravi atau JJLIN seragam
+              email: credentials.email.toLowerCase(),
+              password: credentials.password
+            })
           });
 
-          // 3. Tangkap pesan eror spesifik dari FastAPI jika gagal
           if (!res.ok) {
-            const errorDetails = await res.text(); // Ambil detail eror dari backend
+            const errorDetails = await res.text();
             console.error(`❌ Backend Error [${res.status}]:`, errorDetails);
             return null;
           }
