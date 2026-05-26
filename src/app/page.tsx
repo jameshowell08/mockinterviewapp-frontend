@@ -399,12 +399,12 @@ export default function MockInterviewApp() {
   // ── Setup Screen ──
   if (screen === "setup") {
     return (
-      <main style={{ height: "100vh", display: "flex", flexDirection: "column", alignItems: "center", justifyContent: "center", position: "relative" }}>
+      <div style={{ flex: 1, display: "flex", flexDirection: "column", alignItems: "center", justifyContent: "center", position: "relative", overflowY: "auto", padding: "40px 24px 60px", width: "100%" }}>
         <div className="bg-ambient" />
-        <div className="fade-in" style={{ display: "flex", flexDirection: "column", alignItems: "center", gap: 40, zIndex: 1, width: "100%", maxWidth: 440, padding: "0 24px" }}>
+        <div className="fade-in" style={{ display: "flex", flexDirection: "column", alignItems: "center", gap: 24, zIndex: 1, width: "100%", maxWidth: 440 }}>
           <div className="orb-hero" />
           <div style={{ textAlign: "center" }}>
-            <h1 style={{ fontSize: "2.5rem", fontWeight: 800, letterSpacing: "-0.03em", marginBottom: 8, background: "var(--gradient-hero)", WebkitBackgroundClip: "text", WebkitTextFillColor: "transparent" }}>
+            <h1 style={{ fontSize: "2.25rem", fontWeight: 800, letterSpacing: "-0.03em", marginBottom: 8, background: "var(--gradient-hero)", WebkitBackgroundClip: "text", WebkitTextFillColor: "transparent" }}>
               MockInterview AI
             </h1>
             <p style={{ color: "var(--text-secondary)", fontSize: "0.95rem", lineHeight: 1.6 }}>
@@ -412,7 +412,7 @@ export default function MockInterviewApp() {
             </p>
           </div>
 
-          <div className="glass-card" style={{ width: "100%", padding: 28, display: "flex", flexDirection: "column", gap: 20 }}>
+          <div className="glass-card" style={{ width: "100%", padding: "20px 24px", display: "flex", flexDirection: "column", gap: 16 }}>
             <div className="select-group">
               <label className="select-label" htmlFor="role-select">Job Role</label>
               <select id="role-select" className="select-input" value={jobRole} onChange={(e) => setJobRole(e.target.value)}>
@@ -455,7 +455,7 @@ export default function MockInterviewApp() {
             )}
           </div>
         </div>
-      </main>
+      </div>
     );
   }
 
@@ -465,7 +465,7 @@ export default function MockInterviewApp() {
     const connBadgeClass = connectionStatus === "live" ? "badge-live" : connectionStatus === "connecting" ? "badge-connecting" : "badge-disconnected";
 
     return (
-      <main style={{ height: "100vh", display: "flex", flexDirection: "column", position: "relative" }}>
+      <div style={{ flex: 1, display: "flex", flexDirection: "column", position: "relative", overflow: "hidden" }}>
         <div className="bg-ambient" />
 
         {/* Top Bar */}
@@ -542,13 +542,13 @@ export default function MockInterviewApp() {
             </button>
           </div>
         </div>
-      </main>
+      </div>
     );
   }
 
   // ── Results Screen ──
   return (
-    <main style={{ height: "100vh", overflow: "auto", position: "relative" }}>
+    <div style={{ flex: 1, overflowY: "auto", position: "relative" }}>
       <div className="bg-ambient" />
       <div className="slide-up" style={{ maxWidth: 700, margin: "0 auto", padding: "48px 24px 80px", zIndex: 1, position: "relative" }}>
         <h1 style={{ fontSize: "2rem", fontWeight: 800, marginBottom: 8, background: "var(--gradient-hero)", WebkitBackgroundClip: "text", WebkitTextFillColor: "transparent" }}>
@@ -625,6 +625,6 @@ export default function MockInterviewApp() {
           </div>
         ) : null}
       </div>
-    </main>
+    </div>
   );
 }
