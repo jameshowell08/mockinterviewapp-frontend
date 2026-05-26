@@ -54,6 +54,9 @@ function formatTime(seconds: number): string {
   return `${m.toString().padStart(2, "0")}:${s.toString().padStart(2, "0")}`;
 }
 
+const BACKEND_URL = process.env.NEXT_PUBLIC_BACKEND_URL || "http://127.0.0.1:8000";
+const CLEAN_BACKEND_URL = BACKEND_URL.endsWith('/') ? BACKEND_URL.slice(0, -1) : BACKEND_URL;
+
 // ── Main Component ──
 export default function MockInterviewApp() {
   const { data: session } = useSession();
@@ -212,7 +215,14 @@ export default function MockInterviewApp() {
     if (wsRef.current?.readyState === WebSocket.OPEN) return;
     setConnectionStatus("connecting");
 
-    const ws = new WebSocket("ws://localhost:8000/ws/interview");
+    // Otomatis konversi: http -> ws (lokal) dan https -> wss (cloud run production)
+    const wsUrl = CLEAN_BACKEND_URL.startsWith("https")
+      ? CLEAN_BACKEND_URL.replace("https://", "wss://") + "/ws/interview"
+      : CLEAN_BACKEND_URL.replace("http://", "ws://") + "/ws/interview";
+
+    console.log("🔗 Connecting WebSocket to:", wsUrl); // Untuk memantau di console browser kamu
+
+    const ws = new WebSocket(wsUrl);
     wsRef.current = ws;
 
     ws.onopen = () => {
@@ -315,7 +325,7 @@ export default function MockInterviewApp() {
 
     setLoadingSummary(true);
     try {
-      const resp = await fetch("http://localhost:8000/api/summary", {
+      const resp = await fetch(`${CLEAN_BACKEND_URL}/api/summary`, {
         method: "POST",
         headers: { 
           "Content-Type": "application/json",
