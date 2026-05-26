@@ -19,35 +19,41 @@ export const authOptions: NextAuthOptions = {
         if (!credentials?.email || !credentials?.password) return null;
 
         try {
-          // 1. Send the login request to your secure FastAPI backend
           const backendUrl = process.env.NEXT_PUBLIC_BACKEND_URL || "http://127.0.0.1:8000";
+
+          // 1. Ubah format menjadi URL Encoded (Form Data) & Paksa email jadi huruf kecil
+          const formData = new URLSearchParams();
+          formData.append('username', credentials.email.toLowerCase());
+          formData.append('password', credentials.password);
+
+          // 2. Tembak ke endpoint login backend (Pastikan endpoint-nya /api/auth/login atau sesuaikan dengan backendmu)
           const res = await fetch(`${backendUrl}/api/auth/login`, {
             method: 'POST',
-            headers: { 'Content-Type': 'application/json' },
-            body: JSON.stringify({
-              email: credentials.email,
-              password: credentials.password
-            })
+            headers: {
+              'Content-Type': 'application/x-www-form-urlencoded' // Wajib untuk FastAPI OAuth2
+            },
+            body: formData.toString()
           });
 
+          // 3. Tangkap pesan eror spesifik dari FastAPI jika gagal
           if (!res.ok) {
-            console.error(`Backend auth returned status: ${res.status}`);
+            const errorDetails = await res.text(); // Ambil detail eror dari backend
+            console.error(`❌ Backend Error [${res.status}]:`, errorDetails);
             return null;
           }
 
           const data = await res.json();
 
-          // 2. Extract out the nested user profile and access_token payload
           if (data && data.access_token && data.user) {
             return {
               id: data.user.email,
               name: data.user.name,
               email: data.user.email,
-              backendToken: data.access_token // Pass token down to the NextAuth lifecycle
+              backendToken: data.access_token
             };
           }
         } catch (e) {
-          console.error("Connection error in NextAuth authorization worker:", e);
+          console.error("❌ Connection error in NextAuth:", e);
         }
         return null;
       }
