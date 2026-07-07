@@ -460,7 +460,7 @@ export default function MockInterviewApp() {
             </button>
             {!session && (
               <p style={{ color: "var(--accent-orange)", fontSize: "0.85rem" }}>
-                Please sign in with Google to start an interview and save your history.
+                Please sign in to start an interview and save your history.
               </p>
             )}
           </div>
