@@ -2,6 +2,8 @@
 
 import { useState, useEffect, useRef, useCallback } from "react";
 import { useSession } from "next-auth/react";
+import Link from "next/link";
+import { Bot, User, MessageSquare, Copy, Check } from "lucide-react";
 
 // ── Types ──
 type Screen = "setup" | "interview" | "results";
@@ -65,6 +67,21 @@ export default function MockInterviewApp() {
   const [difficulty, setDifficulty] = useState<string>("normal");
   const [language, setLanguage] = useState<string>("en");
 
+  // Read URL query parameters for role & difficulty presets
+  useEffect(() => {
+    if (typeof window !== "undefined") {
+      const params = new URLSearchParams(window.location.search);
+      const roleParam = params.get("role");
+      const diffParam = params.get("difficulty");
+      if (roleParam && JOB_ROLES.includes(roleParam)) {
+        setJobRole(roleParam);
+      }
+      if (diffParam && (DIFFICULTIES as readonly string[]).includes(diffParam)) {
+        setDifficulty(diffParam);
+      }
+    }
+  }, []);
+
   // Interview state
   const [aiState, setAiState] = useState<AIState>("idle");
   const [connectionStatus, setConnectionStatus] = useState<ConnectionStatus>("disconnected");
@@ -79,6 +96,7 @@ export default function MockInterviewApp() {
   // Results
   const [summary, setSummary] = useState<any>(null);
   const [loadingSummary, setLoadingSummary] = useState(false);
+  const [copiedTranscript, setCopiedTranscript] = useState(false);
 
   // Refs
   const wsRef = useRef<WebSocket | null>(null);
@@ -614,24 +632,106 @@ export default function MockInterviewApp() {
 
             {/* Full Transcript */}
             {transcriptEntries.length > 0 && (
-              <div className="result-card">
-                <h3>Full Transcript</h3>
-                <div className="full-transcript">
-                  {transcriptEntries.map((e, i) => (
-                    <p key={i}>
-                      <span className={`speaker ${e.role === "interviewer" ? "interviewer" : "candidate"}`}>
-                        {e.role === "interviewer" ? "Interviewer:" : "You:"}
-                      </span>
-                      {e.text}
-                    </p>
-                  ))}
+              <div className="glass-card rounded-2xl p-6 sm:p-8 border border-white/5 space-y-6">
+                <div className="flex items-center justify-between pb-3 border-b border-white/5">
+                  <h3 className="text-xl font-bold text-white flex items-center gap-2">
+                    <MessageSquare className="w-5 h-5 text-indigo-400" />
+                    Interview Transcript
+                  </h3>
+                  <div className="flex items-center gap-3">
+                    <span className="text-xs text-slate-400">
+                      {transcriptEntries.length} turns recorded
+                    </span>
+                    <button
+                      onClick={() => {
+                        const text = transcriptEntries
+                          .map((t) => `[${t.role === "user" ? "Candidate" : "Interviewer"}]:\n${t.text}\n`)
+                          .join("\n");
+                        navigator.clipboard.writeText(text).then(() => {
+                          setCopiedTranscript(true);
+                          setTimeout(() => setCopiedTranscript(false), 2000);
+                        });
+                      }}
+                      className="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-lg bg-white/5 hover:bg-white/10 text-slate-300 hover:text-white border border-white/10 text-xs font-medium transition-all"
+                      title="Copy full transcript"
+                    >
+                      {copiedTranscript ? <Check className="w-3.5 h-3.5 text-emerald-400" /> : <Copy className="w-3.5 h-3.5" />}
+                      {copiedTranscript ? "Copied!" : "Copy"}
+                    </button>
+                  </div>
+                </div>
+
+                <div className="space-y-6">
+                  {transcriptEntries.map((e, idx) => {
+                    const isUser = e.role === "user";
+
+                    return (
+                      <div
+                        key={idx}
+                        className={`flex gap-3 sm:gap-4 ${isUser ? "flex-row-reverse" : "flex-row"}`}
+                      >
+                        {/* Avatar */}
+                        <div
+                          className={`w-9 h-9 sm:w-10 sm:h-10 rounded-xl flex items-center justify-center shrink-0 shadow-lg ${
+                            isUser
+                              ? "bg-gradient-to-br from-indigo-500 to-purple-600 text-white"
+                              : "bg-gradient-to-br from-emerald-500 to-teal-600 text-white"
+                          }`}
+                        >
+                          {isUser ? <User className="w-5 h-5" /> : <Bot className="w-5 h-5" />}
+                        </div>
+
+                        {/* Message Bubble */}
+                        <div
+                          className={`max-w-[85%] sm:max-w-[75%] rounded-2xl p-4 sm:p-5 text-sm leading-relaxed ${
+                            isUser
+                              ? "bg-indigo-600/15 border border-indigo-500/25 text-slate-100 rounded-tr-none"
+                              : "bg-slate-900 border border-white/10 text-slate-200 rounded-tl-none"
+                          }`}
+                        >
+                          <div className="flex items-center justify-between gap-4 mb-2 pb-1.5 border-b border-white/5">
+                            <span
+                              className={`text-[11px] font-bold uppercase tracking-wider ${
+                                isUser ? "text-indigo-400" : "text-emerald-400"
+                              }`}
+                            >
+                              {isUser ? "You (Candidate)" : "AI Interviewer"}
+                            </span>
+                            <span className="text-[10px] text-slate-500 font-mono">
+                              Turn #{idx + 1}
+                            </span>
+                          </div>
+                          <p className="whitespace-pre-wrap">{e.text}</p>
+                        </div>
+                      </div>
+                    );
+                  })}
                 </div>
               </div>
             )}
 
-            <button className="btn-primary" onClick={startNew} style={{ alignSelf: "center", marginTop: 8 }}>
-              Start New Interview
-            </button>
+            <div style={{ display: "flex", gap: 16, justifyContent: "center", alignItems: "center", marginTop: 8, flexWrap: "wrap" }}>
+              {(summary.id || summary.interview_id) && (
+                <Link
+                  href={`/history/${summary.id || summary.interview_id}`}
+                  className="btn-primary"
+                  style={{
+                    background: "rgba(255, 255, 255, 0.08)",
+                    border: "1px solid rgba(255, 255, 255, 0.15)",
+                    boxShadow: "none",
+                    textDecoration: "none",
+                    display: "inline-flex",
+                    alignItems: "center",
+                    gap: 8,
+                  }}
+                >
+                  View in History & Transcript →
+                </Link>
+              )}
+              <button className="btn-primary" onClick={startNew}>
+                Start New Interview
+              </button>
+            </div>
           </div>
         ) : null}
       </div>
